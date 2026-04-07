@@ -5,62 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Digital Letter</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
 
   <style>
     * {
       box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      background: #1f3a2e;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: serif;
-      padding: 16px;
+      margin: 0;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      color: #3e2e24;
       overflow-x: hidden;
-      position: relative;
-      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.07), transparent 26%),
+        linear-gradient(180deg, #183126 0%, #1d3b2f 100%);
     }
 
-    .open-text,
-    .bottom-text {
-      position: fixed;
-      color: white;
-      opacity: 0.9;
-      margin: 0;
-      z-index: 1;
-      white-space: nowrap;
-      font-size: clamp(14px, 2vw, 24px);
-      letter-spacing: 0.5px;
-    }
-
-    .open-text {
-      left: clamp(16px, 8vw, 220px);
-      top: clamp(20px, 8vh, 110px);
-    }
-
-    .bottom-text {
-      right: clamp(16px, 8vw, 220px);
-      bottom: clamp(20px, 8vh, 110px);
-    }
-
-    /* CLOSED CARD */
-    .scene {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      position: relative;
-      perspective: 1600px;
-      z-index: 2;
+    .page-shell {
+      min-height: 100vh;
       width: 100%;
+      padding: 18px 14px 36px;
+      position: relative;
+    }
+
+    .floating-top,
+    .floating-bottom {
+      color: rgba(255,255,255,0.92);
+      text-align: center;
+      font-size: clamp(16px, 3.5vw, 22px);
+      letter-spacing: 0.6px;
+      margin: 0;
+    }
+
+    .floating-top {
+      margin-bottom: 18px;
+    }
+
+    .floating-bottom {
+      margin-top: 18px;
+    }
+
+    .script-accent {
+      font-family: "Parisienne", cursive;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    /* HERO */
+    .hero-wrap {
+      min-height: calc(100vh - 120px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .hero-wrap.hidden-hero {
+      opacity: 0;
+      transform: scale(0.96);
+      pointer-events: none;
+    }
+
+    .scene {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      perspective: 1600px;
+      cursor: pointer;
     }
 
     .card {
-      width: min(90vw, 420px);
+      width: min(92vw, 420px);
       aspect-ratio: 420 / 300;
       position: relative;
       transform-style: preserve-3d;
@@ -68,17 +90,17 @@
     }
 
     .scene:hover .card {
-      transform: scale(1.03);
+      transform: scale(1.02);
     }
 
     .card-center {
       position: absolute;
       inset: 0;
-      background: #d7a979;
-      border-radius: 6px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ddb183 0%, #d3a073 100%);
       box-shadow:
-        0 25px 60px rgba(0, 0, 0, 0.5),
-        0 5px 15px rgba(0, 0, 0, 0.3);
+        0 24px 60px rgba(0,0,0,0.34),
+        0 8px 20px rgba(0,0,0,0.2);
     }
 
     .card-half {
@@ -87,18 +109,21 @@
       width: 50%;
       height: 100%;
       background: #d7a979;
-      transition: transform 1s ease;
       z-index: 3;
+      transition: transform 1s ease;
+      backface-visibility: hidden;
     }
 
     .card-left {
       left: 0;
       transform-origin: left;
+      border-radius: 12px 0 0 12px;
     }
 
     .card-right {
       right: 0;
       transform-origin: right;
+      border-radius: 0 12px 12px 0;
     }
 
     .ribbon-left,
@@ -106,57 +131,69 @@
       position: absolute;
       top: 40%;
       height: 20%;
-      background: #b7a18d;
       width: 100%;
+      background: #b7a18d;
     }
 
     .string-horizontal-left,
     .string-horizontal-right {
       position: absolute;
       top: 50%;
+      width: 100%;
       height: 3px;
       background: #f4f1ea;
-      width: 100%;
+    }
+
+    .string-vertical-left,
+    .string-vertical-right {
+      position: absolute;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: #f4f1ea;
     }
 
     .string-vertical-left {
-      position: absolute;
       right: 0;
-      width: 3px;
-      height: 100%;
-      background: #f4f1ea;
     }
 
     .string-vertical-right {
-      position: absolute;
       left: 0;
-      width: 3px;
-      height: 100%;
-      background: #f4f1ea;
     }
 
     .flower {
       position: absolute;
-      top: 28%;
+      top: 27%;
       left: 50%;
       transform: translateX(-50%);
-      font-size: clamp(18px, 3vw, 26px);
+      font-size: clamp(20px, 5vw, 28px);
       z-index: 4;
     }
 
     .seal {
       position: absolute;
-      width: clamp(34px, 5vw, 50px);
+      width: clamp(36px, 12vw, 52px);
       aspect-ratio: 1 / 1;
-      background: #b32020;
       border-radius: 50%;
+      background: #b32020;
       top: 42%;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
       box-shadow:
-        inset 0 -5px 10px rgba(0, 0, 0, 0.4),
-        0 4px 10px rgba(0, 0, 0, 0.3);
+        inset 0 -6px 10px rgba(0,0,0,0.35),
+        0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .hero-label {
+      position: absolute;
+      inset: auto 0 16px 0;
+      text-align: center;
+      color: rgba(255,255,255,0.95);
+      font-size: clamp(14px, 3.3vw, 18px);
+      z-index: 6;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+      pointer-events: none;
     }
 
     .scene.opening .card-left {
@@ -167,131 +204,210 @@
       transform: rotateY(110deg);
     }
 
-    .scene.finished {
-      opacity: 0;
-      transition: 0.4s;
-    }
-
-    /* OPEN CARD */
-    #openCard {
+    /* STORY */
+    #storyView {
       display: none;
-      width: min(100%, 1320px);
-      min-height: 820px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-      margin-top: 30px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      width: 100%;
     }
 
-    .panel {
-      padding: 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      min-width: 0;
+    #storyView.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .left,
-    .right {
-      flex: 1.2;
-      background: #faf7f2;
+    .story-container {
+      width: min(100%, 820px);
+      margin: 0 auto;
+      padding-bottom: 40px;
     }
 
-    .middle {
-      flex: 0.8;
-      text-align: center;
-      background:
-        radial-gradient(circle at top, rgba(255,255,255,0.9), rgba(255,250,243,0.95) 45%, rgba(245,237,226,1) 100%),
-        repeating-linear-gradient(
-          0deg,
-          rgba(255,255,255,0.18) 0px,
-          rgba(255,255,255,0.18) 2px,
-          rgba(0,0,0,0.015) 3px,
-          rgba(255,250,243,0.02) 6px
-        );
-      flex-direction: column;
+    .story-card {
       position: relative;
       overflow: hidden;
+      border-radius: 28px;
+      background: linear-gradient(180deg, #fffaf4 0%, #f7efe4 100%);
+      box-shadow:
+        0 26px 70px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.6);
     }
 
-    .middle::before {
+    .story-card::before {
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        radial-gradient(circle at 20% 25%, rgba(214,183,160,0.14) 0 22px, transparent 23px),
-        radial-gradient(circle at 78% 18%, rgba(214,183,160,0.10) 0 18px, transparent 19px),
-        radial-gradient(circle at 30% 75%, rgba(214,183,160,0.10) 0 20px, transparent 21px),
-        radial-gradient(circle at 82% 70%, rgba(214,183,160,0.12) 0 24px, transparent 25px);
-      opacity: 0.9;
       pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 14%, rgba(214,183,160,0.18) 0 28px, transparent 29px),
+        radial-gradient(circle at 84% 10%, rgba(214,183,160,0.12) 0 22px, transparent 23px),
+        radial-gradient(circle at 22% 78%, rgba(214,183,160,0.12) 0 22px, transparent 23px),
+        radial-gradient(circle at 88% 74%, rgba(214,183,160,0.10) 0 30px, transparent 31px);
+      opacity: 0.85;
     }
 
-    /* PHOTO CLUSTER DESKTOP */
-    .photo-cluster {
-      position: relative;
-      width: 100%;
-      max-width: 430px;
-      height: 680px;
-    }
-
-    .polaroid {
+    .story-card::after {
+      content: "";
       position: absolute;
-      background: white;
-      padding: 10px 10px 20px 10px;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
-      border-radius: 3px;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-      cursor: pointer;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(120, 89, 69, 0.045) 1px, transparent 1px);
+      background-size: 100% 36px;
+      opacity: 0.65;
+      mix-blend-mode: multiply;
     }
 
-    .polaroid:hover {
-      transform: scale(1.04) rotate(0deg) !important;
-      z-index: 20 !important;
-      box-shadow: 0 16px 34px rgba(0,0,0,0.28);
-    }
-
-    .polaroid img {
-      width: clamp(100px, 11vw, 155px);
-      aspect-ratio: 1 / 1;
-      height: auto;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* LEFT SIDE */
-    .left .photo-1 { top: 10px; left: 30px; transform: rotate(-9deg); z-index: 3; }
-    .left .photo-2 { top: 65px; right: 35px; transform: rotate(7deg); z-index: 4; }
-    .left .photo-3 { top: 210px; left: 10px; transform: rotate(-5deg); z-index: 2; }
-    .left .photo-4 { top: 265px; right: 28px; transform: rotate(8deg); z-index: 5; }
-    .left .photo-5 { top: 430px; left: 40px; transform: rotate(-7deg); z-index: 3; }
-    .left .photo-6 { top: 495px; right: 18px; transform: rotate(5deg); z-index: 4; }
-
-    /* RIGHT SIDE */
-    .right .photo-1 { top: 18px; left: 28px; transform: rotate(8deg); z-index: 4; }
-    .right .photo-2 { top: 78px; right: 30px; transform: rotate(-7deg); z-index: 3; }
-    .right .photo-3 { top: 220px; left: 18px; transform: rotate(6deg); z-index: 5; }
-    .right .photo-4 { top: 280px; right: 22px; transform: rotate(-8deg); z-index: 2; }
-    .right .photo-5 { top: 438px; left: 36px; transform: rotate(7deg); z-index: 4; }
-    .right .photo-6 { top: 500px; right: 26px; transform: rotate(-5deg); z-index: 3; }
-
-    /* ENVELOPE */
-    .envelope {
-      width: min(70vw, 220px);
-      aspect-ratio: 220 / 140;
-      background: #f5f1ea;
+    .story-section {
       position: relative;
-      border-radius: 4px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      z-index: 2;
+      padding: 24px 18px;
+    }
+
+    .story-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(125,96,74,0.35), transparent);
+      margin: 0 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .floral-corner {
+      position: absolute;
+      font-size: 28px;
+      color: rgba(173, 121, 96, 0.32);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .floral-top-left {
+      top: 14px;
+      left: 16px;
+      transform: rotate(-10deg);
+    }
+
+    .floral-top-right {
+      top: 16px;
+      right: 18px;
+      transform: rotate(16deg);
+    }
+
+    .floral-bottom-left {
+      bottom: 14px;
+      left: 16px;
+      transform: rotate(180deg);
+    }
+
+    .floral-bottom-right {
+      bottom: 14px;
+      right: 16px;
+      transform: rotate(190deg);
+    }
+
+    /* ENVELOPE SECTION */
+    .envelope-stage {
+      min-height: 62vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      gap: 18px;
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+
+    .mini-heading {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8c6e56;
+      margin: 0;
+    }
+
+    .story-title {
+      font-size: clamp(34px, 9vw, 54px);
+      line-height: 1.05;
+      color: #3b2c22;
+      margin: 0;
+    }
+
+    .story-subtitle {
+      max-width: 28ch;
+      font-size: clamp(17px, 4vw, 21px);
+      line-height: 1.65;
+      color: #6c5545;
+      margin: 0 auto;
+    }
+
+    .envelope-wrap {
+      position: relative;
+      width: fit-content;
+    }
+
+    .tape {
+      position: absolute;
+      width: 64px;
+      height: 20px;
+      background: rgba(243, 225, 173, 0.55);
+      border: 1px solid rgba(190, 170, 120, 0.2);
+      backdrop-filter: blur(1px);
+      z-index: 4;
+    }
+
+    .tape-left {
+      top: -10px;
+      left: -12px;
+      transform: rotate(-20deg);
+    }
+
+    .tape-right {
+      top: -12px;
+      right: -10px;
+      transform: rotate(18deg);
+    }
+
+    .sticker {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 62px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #7b5d49;
+      background: #f4dfc8;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      z-index: 5;
+    }
+
+    .sticker-heart {
+      right: -18px;
+      bottom: 8px;
+      transform: rotate(8deg);
+    }
+
+    .envelope {
+      width: min(76vw, 270px);
+      aspect-ratio: 220 / 140;
+      background: #f5efe6;
+      position: relative;
+      border-radius: 10px;
+      box-shadow:
+        0 12px 26px rgba(0,0,0,0.16),
+        0 2px 0 rgba(255,255,255,0.65) inset;
       cursor: pointer;
-      transition: transform 0.3s;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       z-index: 2;
     }
 
     .envelope:hover {
-      transform: scale(1.05);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow:
+        0 18px 34px rgba(0,0,0,0.18),
+        0 2px 0 rgba(255,255,255,0.65) inset;
     }
 
     .flap {
@@ -300,8 +416,9 @@
       left: 0;
       width: 100%;
       height: 50%;
-      background: #e6dfd4;
+      background: #e7ddd0;
       clip-path: polygon(0 0, 100% 0, 50% 100%);
+      border-radius: 10px 10px 0 0;
     }
 
     .envelope-body {
@@ -309,28 +426,306 @@
       justify-content: center;
       align-items: center;
       height: 100%;
+      padding-top: 12px;
     }
 
     .envelope-text {
-      font-size: clamp(12px, 2vw, 14px);
-      opacity: 0.7;
+      font-size: clamp(12px, 3.4vw, 15px);
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: #7d6250;
+      opacity: 0.88;
     }
 
-    .letter {
+    .tap-note {
+      font-size: 14px;
+      color: #8c6e56;
+      margin: 0;
+    }
+
+    .letter-content {
       display: none;
-      animation: fadeIn 0.5s ease;
-      max-width: min(90%, 320px);
-      font-size: clamp(13px, 1.8vw, 14px);
-      line-height: 1.6;
-      word-break: break-word;
+      animation: fadeInUp 0.8s ease;
+      max-width: 100%;
+      text-align: left;
+      background: rgba(255,255,255,0.5);
+      padding: 22px 18px;
+      border-radius: 22px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.07);
       position: relative;
-      z-index: 2;
     }
 
-    @keyframes fadeIn {
+    .letter-content::before {
+      content: "✿";
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      color: rgba(173, 121, 96, 0.4);
+      font-size: 24px;
+    }
+
+    .letter-content.show {
+      display: block;
+    }
+
+    .letter-content h2 {
+      font-size: clamp(30px, 8vw, 40px);
+      margin: 0 0 16px;
+      color: #3d2c20;
+    }
+
+    .letter-content p {
+      font-size: clamp(17px, 4.2vw, 20px);
+      line-height: 1.9;
+      color: #4b3a2f;
+      margin: 0 0 18px;
+    }
+
+    .signature {
+      margin-top: 24px;
+      font-style: italic;
+      color: #745c4a;
+    }
+
+    /* CINEMATIC PHOTO ROWS */
+    .section-heading {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 7vw, 36px);
+      color: #3c2d23;
+    }
+
+    .section-copy {
+      margin: 0 0 18px;
+      color: #6d5647;
+      line-height: 1.75;
+      font-size: clamp(16px, 3.8vw, 19px);
+      max-width: 52ch;
+    }
+
+    .quote-note {
+      background: rgba(255,255,255,0.55);
+      border-radius: 18px;
+      padding: 18px 16px;
+      font-size: clamp(16px, 4vw, 19px);
+      line-height: 1.8;
+      color: #5f4a3b;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      position: relative;
+      margin-bottom: 22px;
+    }
+
+    .quote-note::before {
+      content: "“";
+      position: absolute;
+      top: -8px;
+      left: 14px;
+      font-size: 42px;
+      color: rgba(173, 121, 96, 0.35);
+    }
+
+    .carousel-shell {
+      position: relative;
+    }
+
+    .carousel-shell::before,
+    .carousel-shell::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 42px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .carousel-shell::before {
+      left: 0;
+      background: linear-gradient(to right, #f7efe4, transparent);
+    }
+
+    .carousel-shell::after {
+      right: 0;
+      background: linear-gradient(to left, #f7efe4, transparent);
+    }
+
+    .carousel {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      padding: 12px 44px 12px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .carousel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: rgba(255, 248, 240, 0.96);
+      color: #7b5d49;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+    }
+
+    .carousel-btn:hover {
+      background: #fff;
+    }
+
+    .carousel-btn:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    .carousel-btn.left {
+      left: 0;
+    }
+
+    .carousel-btn.right {
+      right: 0;
+    }
+
+    .memory-card {
+      position: relative;
+      flex: 0 0 88%;
+      scroll-snap-align: center;
+      background: #fff;
+      border-radius: 22px;
+      padding: 10px;
+      box-shadow: 0 16px 34px rgba(0,0,0,0.14);
+      transform: rotate(-1deg);
+      transition:
+        transform 0.45s ease,
+        box-shadow 0.45s ease,
+        opacity 0.45s ease,
+        filter 0.45s ease;
+      overflow: hidden;
+      opacity: 0;
+      filter: saturate(0.9);
+    }
+
+    .memory-card:nth-child(even) {
+      transform: rotate(1deg);
+    }
+
+    .memory-card.reveal {
+      animation: cardReveal 0.8s ease forwards;
+    }
+
+    .memory-card.is-active {
+      transform: scale(1.02) rotate(0deg);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.18);
+      filter: saturate(1);
+    }
+
+    .memory-card:not(.is-active) {
+      opacity: 0.82;
+    }
+
+    .memory-image {
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      transition: transform 0.5s ease, filter 0.5s ease;
+    }
+
+    .memory-card:hover .memory-image {
+      transform: scale(1.03);
+      filter: contrast(1.03);
+    }
+
+    /* FINAL */
+    .final-message {
+      text-align: center;
+      padding-top: 34px;
+      padding-bottom: 34px;
+    }
+
+    .final-message h3 {
+      font-size: clamp(28px, 7vw, 38px);
+      margin: 0 0 12px;
+      color: #3c2b20;
+    }
+
+    .final-message p {
+      max-width: 32ch;
+      margin: 0 auto;
+      line-height: 1.85;
+      color: #705849;
+      font-size: clamp(17px, 4vw, 20px);
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.88);
+      padding: 20px 14px;
+    }
+
+    .modal-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .modal-content {
+      max-width: 94%;
+      max-height: 86vh;
+      border-radius: 14px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+      animation: zoomIn 0.3s ease;
+    }
+
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 8px;
+      color: white;
+      font-size: 38px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(12px);
       }
       to {
         opacity: 1;
@@ -338,269 +733,321 @@
       }
     }
 
-    /* MODAL */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 100;
-      padding: 30px 16px;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-    }
-
-    .modal-content {
-      display: block;
-      margin: auto;
-      max-width: 90%;
-      max-height: 85vh;
-      border-radius: 8px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      animation: zoom 0.3s ease;
-    }
-
-    @keyframes zoom {
-      from { transform: scale(0.8); }
-      to { transform: scale(1); }
-    }
-
-    .close {
-      position: absolute;
-      top: 16px;
-      right: 24px;
-      color: white;
-      font-size: 40px;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    /* TABLET */
-    @media (max-width: 980px) {
-      #openCard {
-        flex-direction: column;
-        min-height: auto;
+    @keyframes cardReveal {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96) rotate(0deg);
       }
-
-      .left,
-      .middle,
-      .right {
-        width: 100%;
-      }
-
-      .panel {
-        padding: 20px 16px;
-      }
-
-      .photo-cluster {
-        position: static;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(90px, 1fr));
-        gap: 16px;
-        height: auto;
-        max-width: 100%;
-        justify-items: center;
-      }
-
-      .polaroid {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        transform: rotate(0deg) !important;
-        width: 100%;
-        max-width: 140px;
-      }
-
-      .polaroid img {
-        width: 100%;
-      }
-
-      .open-text {
-        left: 16px;
-        top: 18px;
-      }
-
-      .bottom-text {
-        right: 16px;
-        bottom: 18px;
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(var(--tilt, 0deg));
       }
     }
 
-    /* MOBILE */
-    @media (max-width: 640px) {
-      body {
-        padding: 12px;
+    /* DESKTOP */
+    @media (min-width: 768px) {
+      .page-shell {
+        padding: 28px 22px 40px;
       }
 
-      .open-text,
-      .bottom-text {
-        position: static;
-        text-align: center;
-        white-space: normal;
+      .floating-top,
+      .floating-bottom {
+        position: fixed;
+        z-index: 10;
       }
 
-      .open-text {
-        margin-bottom: 8px;
+      .floating-top {
+        top: 32px;
+        left: 42px;
+        margin: 0;
       }
 
-      .bottom-text {
-        margin-top: 12px;
+      .floating-bottom {
+        right: 42px;
+        bottom: 30px;
+        margin: 0;
       }
 
-      #openCard {
-        margin-top: 20px;
-        border-radius: 8px;
+      .story-section {
+        padding: 36px 34px;
       }
 
-      .photo-cluster {
-        grid-template-columns: repeat(2, minmax(110px, 1fr));
-        gap: 14px;
+      .story-divider {
+        margin: 0 34px;
       }
 
-      .panel {
-        padding: 16px 12px;
+      .memory-card {
+        flex: 0 0 42%;
+      }
+    }
+
+    @media (min-width: 1100px) {
+      .story-container {
+        width: min(100%, 940px);
       }
 
-      .middle {
-        order: -1;
+      .story-section {
+        padding: 44px 52px;
       }
 
-      .letter {
-        max-width: 100%;
+      .story-divider {
+        margin: 0 52px;
       }
 
-      .modal-content {
-        max-width: 95%;
+      .memory-card {
+        flex: 0 0 34%;
       }
     }
   </style>
 </head>
 <body>
+  <div class="page-shell">
+    <p class="floating-top">To Johnson ...</p>
 
-  <div id="imageModal" class="modal">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <img class="modal-content" id="modalImg" alt="Expanded image">
-  </div>
+    <section id="heroWrap" class="hero-wrap">
+      <div id="closedCard" class="scene" onclick="openCard()">
+        <div class="card">
+          <div class="card-center"></div>
 
-  <p class="open-text">To Johnson ...</p>
-  <p class="bottom-text">... Made with love</p>
+          <div class="card-half card-left">
+            <div class="ribbon-left"></div>
+            <div class="string-horizontal-left"></div>
+            <div class="string-vertical-left"></div>
+          </div>
 
-  <!-- CLOSED CARD -->
-  <div id="closedCard" class="scene" onclick="openCard()">
-    <div class="card">
-      <div class="card-center"></div>
+          <div class="card-half card-right">
+            <div class="ribbon-right"></div>
+            <div class="string-horizontal-right"></div>
+            <div class="string-vertical-right"></div>
+          </div>
 
-      <div class="card-half card-left">
-        <div class="ribbon-left"></div>
-        <div class="string-horizontal-left"></div>
-        <div class="string-vertical-left"></div>
-      </div>
-
-      <div class="card-half card-right">
-        <div class="ribbon-right"></div>
-        <div class="string-horizontal-right"></div>
-        <div class="string-vertical-right"></div>
-      </div>
-
-      <div class="seal"></div>
-      <div class="flower">✿</div>
-    </div>
-  </div>
-
-  <!-- OPEN CARD -->
-  <div id="openCard" class="flex">
-
-    <!-- LEFT PANEL -->
-    <div class="panel left">
-      <div class="photo-cluster">
-        <div class="polaroid photo-1"><img src="images/photo 1.jpg" alt="Photo 1" onclick="openModal(this)"></div>
-        <div class="polaroid photo-2"><img src="images/photo 2.jpg" alt="Photo 2" onclick="openModal(this)"></div>
-        <div class="polaroid photo-3"><img src="images/photo 3.jpg" alt="Photo 3" onclick="openModal(this)"></div>
-        <div class="polaroid photo-4"><img src="images/photo 7.jpg" alt="Photo 7" onclick="openModal(this)"></div>
-        <div class="polaroid photo-5"><img src="images/photo 8.jpg" alt="Photo 8" onclick="openModal(this)"></div>
-        <div class="polaroid photo-6"><img src="images/photo 9.jpg" alt="Photo 9" onclick="openModal(this)"></div>
-      </div>
-    </div>
-
-    <!-- MIDDLE PANEL -->
-    <div class="panel middle">
-      <div id="envelope" class="envelope" onclick="openEnvelope(event)">
-        <div class="flap"></div>
-        <div class="envelope-body">
-          <p class="envelope-text">Open Letter</p>
+          <div class="seal"></div>
+          <div class="flower">✿</div>
+          <p class="hero-label">Tap to open</p>
         </div>
       </div>
+    </section>
 
-      <div id="letter" class="letter">
-        <h2 class="text-2xl mb-4">Dear Johnson</h2>
-        <p>
-          Some letters are written in ink, others in memory.
-          This one lives somewhere in between.
-        </p>
-        <br>
-        <p>
-          Every photo here is a moment, every word a reminder
-          that small things become big stories when we look back.
-        </p>
-        <br>
-        <p>
-          Your mind. Your passion and hard work in aviation translating to brilliance,
-          certificates left on your table, all straight As. Growing up, your dedication
-          has been like a mirror into what true success is built on. All while seeming
-          effortless at times, as you loved to study seated up on your bed. Your
-          creativity unmatched as you always had new ways of preparing meals.
-        </p>
-        <br>
-        <p>
-          Your heart. The many surprises and unceremonious gifts you loved to get for us
-          just to make us smile, not to mention cutting treats in half, held behind your
-          back, so we would choose fairly. The laughter during late night board games you
-          insisted we take part in, although late, just so we would not miss out. Many of
-          our fondest childhood memories have you written into them. Your love and
-          consideration never went unnoticed.
-        </p>
-        <br>
-        <p>From your Sisters</p>
+    <main id="storyView">
+      <div class="story-container">
+        <div class="story-card">
+          <span class="floral-corner floral-top-left">❀</span>
+          <span class="floral-corner floral-top-right">❁</span>
+          <span class="floral-corner floral-bottom-left">❀</span>
+          <span class="floral-corner floral-bottom-right">❁</span>
+
+          <section class="story-section envelope-stage">
+            <p class="mini-heading">A scrapbook letter</p>
+            <h1 class="story-title script-accent">For Johnson</h1>
+            <p class="story-subtitle">
+              A few memories, a few soft notes, and a small space made to feel like love kept on paper.
+            </p>
+
+            <div class="envelope-wrap">
+              <span class="tape tape-left"></span>
+              <span class="tape tape-right"></span>
+              <span class="sticker sticker-heart">with love</span>
+
+              <div id="envelope" class="envelope" onclick="openEnvelope(event)">
+                <div class="flap"></div>
+                <div class="envelope-body">
+                  <p class="envelope-text">Open Letter</p>
+                </div>
+              </div>
+            </div>
+
+            <p id="tapNote" class="tap-note">Tap the envelope to unfold the letter</p>
+
+            <div id="letter" class="letter-content">
+              <h2 class="script-accent">Dear Johnson</h2>
+
+              <p>
+                Some letters are written in ink, others in memory.
+                This one lives somewhere in between.
+              </p>
+
+              <p>
+                Every photo here is a moment, every word a reminder
+                that small things become big stories when we look back.
+              </p>
+
+              <p>
+                Your mind. Your passion and hard work in aviation translating to brilliance,
+                certificates left on your table, all straight As. Growing up, your dedication
+                has been like a mirror into what true success is built on. All while seeming
+                effortless at times, as you loved to study seated up on your bed. Your
+                creativity unmatched as you always had new ways of preparing meals.
+              </p>
+
+              <p>
+                Your heart. The many surprises and unceremonious gifts you loved to get for us
+                just to make us smile, not to mention cutting treats in half, held behind your
+                back, so we would choose fairly. The laughter during late night board games you
+                insisted we take part in, although late, just so we would not miss out. Many of
+                our fondest childhood memories have you written into them. Your love and
+                consideration never went unnoticed.
+              </p>
+
+              <p class="signature script-accent">From your Sisters</p>
+            </div>
+          </section>
+
+          <div class="story-divider"></div>
+
+          <section class="story-section">
+            <h3 class="section-heading script-accent">The Man You Are</h3>
+            <p class="section-copy">
+              These moments reflect your character, your presence, your brilliance. They capture the kind of person you are.
+            </p>
+
+            <div class="carousel-shell">
+              <button class="carousel-btn left" onclick="scrollCarousel(this, -1)" aria-label="Scroll left">
+                &#10094;
+              </button>
+
+              <div class="carousel">
+                <div class="memory-card" style="--tilt:-1deg;">
+                  <img src="images/photo 1.jpg" alt="Photo 1" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:1deg;">
+                  <img src="images/photo 2.jpg" alt="Photo 2" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:-0.8deg;">
+                  <img src="images/photo 3.jpg" alt="Photo 3" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:0.9deg;">
+                  <img src="images/photo 4.jpg" alt="Photo 4" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:-1.2deg;">
+                  <img src="images/photo 5.jpg" alt="Photo 5" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:1.1deg;">
+                  <img src="images/photo 6.jpg" alt="Photo 6" class="memory-image" onclick="openModal(this)">
+                </div>
+              </div>
+
+              <button class="carousel-btn right" onclick="scrollCarousel(this, 1)" aria-label="Scroll right">
+                &#10095;
+              </button>
+            </div>
+          </section>
+
+          <div class="story-divider"></div>
+
+          <section class="story-section">
+            <h3 class="section-heading script-accent">The Love Around You</h3>
+            <p class="section-copy">
+              Here lives the love that has always surrounded you - in family, in togetherness.
+            </p>
+
+            <div class="quote-note">
+              Some people leave their goodness everywhere they have been.
+              This is only a small attempt to gather a little of yours in one place.
+            </div>
+
+            <div class="carousel-shell">
+              <button class="carousel-btn left" onclick="scrollCarousel(this, -1)" aria-label="Scroll left">
+                &#10094;
+              </button>
+
+              <div class="carousel">
+                <div class="memory-card" style="--tilt:1deg;">
+                  <img src="images/photo 7.jpg" alt="Photo 7" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:-1deg;">
+                  <img src="images/photo 8.jpg" alt="Photo 8" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:0.9deg;">
+                  <img src="images/photo 9.jpg" alt="Photo 9" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:-1.1deg;">
+                  <img src="images/photo 10.jpg" alt="Photo 10" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:0.8deg;">
+                  <img src="images/photo 11.jpg" alt="Photo 11" class="memory-image" onclick="openModal(this)">
+                </div>
+
+                <div class="memory-card" style="--tilt:-1deg;">
+                  <img src="images/photo 12.jpg" alt="Photo 12" class="memory-image" onclick="openModal(this)">
+                </div>
+              </div>
+
+              <button class="carousel-btn right" onclick="scrollCarousel(this, 1)" aria-label="Scroll right">
+                &#10095;
+              </button>
+            </div>
+          </section>
+
+          <div class="story-divider"></div>
+
+          <section class="story-section final-message">
+            <h3 class="script-accent">Made with love</h3>
+            <p>
+              May this letter be a reminder of how much love and admiration surrounds you.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    </main>
 
-    <!-- RIGHT PANEL -->
-    <div class="panel right">
-      <div class="photo-cluster">
-        <div class="polaroid photo-1"><img src="images/photo 4.jpg" alt="Photo 4" onclick="openModal(this)"></div>
-        <div class="polaroid photo-2"><img src="images/photo 5.jpg" alt="Photo 5" onclick="openModal(this)"></div>
-        <div class="polaroid photo-3"><img src="images/photo 6.jpg" alt="Photo 6" onclick="openModal(this)"></div>
-        <div class="polaroid photo-4"><img src="images/photo 10.jpg" alt="Photo 10" onclick="openModal(this)"></div>
-        <div class="polaroid photo-5"><img src="images/photo 11.jpg" alt="Photo 11" onclick="openModal(this)"></div>
-        <div class="polaroid photo-6"><img src="images/photo 12.jpg" alt="Photo 12" onclick="openModal(this)"></div>
-      </div>
-    </div>
+    <p class="floating-bottom">... Made with love</p>
+  </div>
 
+  <div id="imageModal" class="modal">
+    <div class="modal-inner">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <img class="modal-content" id="modalImg" alt="Expanded image">
+    </div>
   </div>
 
   <script>
     function openCard() {
       const closedCard = document.getElementById("closedCard");
-      const openCard = document.getElementById("openCard");
+      const heroWrap = document.getElementById("heroWrap");
+      const storyView = document.getElementById("storyView");
 
       closedCard.classList.add("opening");
 
       setTimeout(() => {
-        closedCard.classList.add("finished");
-      }, 800);
+        heroWrap.classList.add("hidden-hero");
+      }, 700);
 
       setTimeout(() => {
-        closedCard.style.display = "none";
-        openCard.style.display = "flex";
+        heroWrap.style.display = "none";
+        storyView.style.display = "block";
+
+        requestAnimationFrame(() => {
+          storyView.classList.add("show");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          observeCards();
+          setupCarousels();
+        });
       }, 1200);
     }
 
     function openEnvelope(event) {
       event.stopPropagation();
-      document.getElementById("envelope").style.display = "none";
-      document.getElementById("letter").style.display = "block";
+
+      const envelope = document.getElementById("envelope");
+      const tapNote = document.getElementById("tapNote");
+      const letter = document.getElementById("letter");
+
+      envelope.style.display = "none";
+      tapNote.style.display = "none";
+      letter.classList.add("show");
+
+      setTimeout(() => {
+        letter.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 180);
     }
 
     function openModal(img) {
@@ -609,19 +1056,94 @@
 
       modal.style.display = "block";
       modalImg.src = img.src;
+      modalImg.alt = img.alt || "Expanded image";
     }
 
     function closeModal() {
       document.getElementById("imageModal").style.display = "none";
     }
 
-    window.onclick = function(event) {
+    function scrollCarousel(button, direction) {
+      const shell = button.parentElement;
+      const carousel = shell.querySelector(".carousel");
+      const card = carousel.querySelector(".memory-card");
+
+      if (!carousel || !card) return;
+
+      const gap = 20;
+      const scrollAmount = card.offsetWidth + gap;
+
+      carousel.scrollBy({
+        left: scrollAmount * direction,
+        behavior: "smooth"
+      });
+
+      setTimeout(() => updateActiveCards(carousel), 220);
+    }
+
+    function updateActiveCards(carousel) {
+      const cards = carousel.querySelectorAll(".memory-card");
+      const carouselRect = carousel.getBoundingClientRect();
+      const carouselCenter = carouselRect.left + carouselRect.width / 2;
+
+      let closestCard = null;
+      let closestDistance = Infinity;
+
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(carouselCenter - cardCenter);
+
+        card.classList.remove("is-active");
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestCard = card;
+        }
+      });
+
+      if (closestCard) {
+        closestCard.classList.add("is-active");
+      }
+    }
+
+    function setupCarousels() {
+      const carousels = document.querySelectorAll(".carousel");
+
+      carousels.forEach(carousel => {
+        updateActiveCards(carousel);
+
+        carousel.addEventListener("scroll", () => {
+          window.requestAnimationFrame(() => updateActiveCards(carousel));
+        });
+      });
+    }
+
+    window.addEventListener("click", function(event) {
       const modal = document.getElementById("imageModal");
       if (event.target === modal) {
-        modal.style.display = "none";
+        closeModal();
       }
-    };
-  </script>
+    });
 
+    function observeCards() {
+      const cards = document.querySelectorAll(".memory-card");
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add("reveal");
+            }, index * 80);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.16
+      });
+
+      cards.forEach(card => observer.observe(card));
+    }
+  </script>
 </body>
 </html>
